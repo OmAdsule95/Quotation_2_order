@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Quotation System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="glass navbar">
+        <h2>Thinqloud Q2O</h2>
+        <div class="nav-links" id="navLinks">
+            <a href="dashboard.html" class="active">Dashboard</a>
+            <a href="customers.html">Customers</a>
+            <a href="products.html">Products</a>
+            <a href="quotations.html">Quotations</a>
+            <a href="orders.html">Orders</a>
+            <button onclick="logout()" class="btn btn-primary btn-sm" style="margin-left: 1rem;">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 style="margin-bottom: 2rem;">Dashboard Overview</h1>
+        
+        <div class="grid">
+            <div class="glass stat-card">
+                <p>Total Customers</p>
+                <h3 id="stat-customers">0</h3>
+            </div>
+            <div class="glass stat-card">
+                <p>Total Products</p>
+                <h3 id="stat-products">0</h3>
+            </div>
+            <div class="glass stat-card">
+                <p>Total Quotations</p>
+                <h3 id="stat-quotations">0</h3>
+            </div>
+            <div class="glass stat-card">
+                <p>Pending Approvals</p>
+                <h3 id="stat-pending">0</h3>
+            </div>
+            <div class="glass stat-card">
+                <p>Accepted Quotations</p>
+                <h3 id="stat-accepted">0</h3>
+            </div>
+            <div class="glass stat-card">
+                <p>Total Orders</p>
+                <h3 id="stat-orders">0</h3>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
