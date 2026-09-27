@@ -50,7 +50,56 @@ function logout() {
 }
 
 function checkAuth() {
-    if (!getToken() && !window.location.pathname.endsWith('login.html')) {
+    const token = getToken();
+    if (!token && !window.location.pathname.endsWith('login.html')) {
         window.location.href = 'login.html';
+        return;
+    }
+    
+    const user = getUser();
+    if (user) {
+        // Populate sidebar user info
+        const avatarEl = document.getElementById('userAvatar');
+        const nameEl = document.getElementById('sidebarUserName');
+        const roleEl = document.getElementById('sidebarUserRole');
+        if (avatarEl) avatarEl.textContent = user.name ? user.name.charAt(0).toUpperCase() : 'U';
+        if (nameEl) nameEl.textContent = user.name || 'User';
+        if (roleEl) roleEl.textContent = user.role || 'Role';
+
+        // Show 'Users' tab for ADMIN
+        if (user.role === 'ADMIN') {
+            const navUsers = document.getElementById('nav-users');
+            if (navUsers) {
+                navUsers.style.display = 'flex';
+            }
+            // Hide customers, quotations, and orders tabs
+            const navLinks = document.querySelectorAll('.sidebar-nav a');
+            navLinks.forEach(link => {
+                const text = link.textContent.trim();
+                if (text === 'Customers' || text === 'Quotations' || text === 'Orders') {
+                    link.style.display = 'none';
+                }
+            });
+        }
+        if (user.role === 'MANAGER') {
+            // Hide customers and products tabs
+            const navLinks = document.querySelectorAll('.sidebar-nav a');
+            navLinks.forEach(link => {
+                const text = link.textContent.trim();
+                if (text === 'Customers' || text === 'Products') {
+                    link.style.display = 'none';
+                }
+            });
+        }
+        if (user.role === 'SALES') {
+            // Hide products tab
+            const navLinks = document.querySelectorAll('.sidebar-nav a');
+            navLinks.forEach(link => {
+                const text = link.textContent.trim();
+                if (text === 'Products') {
+                    link.style.display = 'none';
+                }
+            });
+        }
     }
 }

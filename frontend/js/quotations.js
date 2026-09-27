@@ -22,10 +22,39 @@ async function loadQuotations() {
     const tbody = document.getElementById('quotationsTable');
     tbody.innerHTML = '';
     const user = getUser();
+    
+    if (user.role === 'MANAGER') {
+        const createBtn = document.getElementById('create-quote-btn');
+        if (createBtn) createBtn.style.display = 'none';
+    }
 
     if (data.success) {
+        // Sort data so actionable items appear first for the user
+        data.data.sort((a, b) => {
+            const getPriority = (q) => {
+                if (user.role === 'MANAGER') {
+                    return q.status === 'PENDING_APPROVAL' ? 1 : 0;
+                } else if (user.role === 'SALES' || user.role === 'ADMIN') {
+                    return ['DRAFT', 'APPROVED', 'SENT', 'ACCEPTED'].includes(q.status) ? 1 : 0;
+                }
+                return 0;
+            };
+            
+            const pA = getPriority(a);
+            const pB = getPriority(b);
+            
+            if (pA !== pB) {
+                return pB - pA; // Higher priority first
+            }
+            // Fallback to date descending (newest first)
+            return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+
         data.data.forEach(q => {
-            let actions = `<a href="quotation-details.html?id=${q._id}" class="btn btn-sm" style="background: rgba(255,255,255,0.1);">View</a>`;
+            let actions = '';
+            if (user.role !== 'MANAGER') {
+                actions = `<button onclick="openViewModal('${q._id}')" class="btn btn-sm btn-ghost">View</button>`;
+            }
             
             if (q.status === 'DRAFT' && (user.role === 'SALES' || user.role === 'ADMIN')) {
                 actions += ` <button onclick="updateStatus('${q._id}', 'submit')" class="btn btn-sm btn-primary">Submit</button>`;
@@ -47,10 +76,10 @@ async function loadQuotations() {
             tr.innerHTML = `
                 <td>${q.quotationNumber}</td>
                 <td>${q.customerDetails?.name || '-'}</td>
-                <td>$${q.grandTotal.toFixed(2)}</td>
+                <td>₹${q.grandTotal.toFixed(2)}</td>
                 <td>${getStatusBadge(q.status)}</td>
                 <td>${new Date(q.createdAt).toLocaleDateString()}</td>
-                <td class="action-btns">${actions}</td>
+                <td><div class="action-btns">${actions}</div></td>
             `;
             tbody.appendChild(tr);
         });
@@ -76,10 +105,138 @@ async function convertOrder(id) {
     }
 }
 
-function openApproveModal(id) {
+async function openApproveModal(id) {
     document.getElementById('approveQuoteId').value = id;
     document.getElementById('approveComments').value = '';
+    document.getElementById('quoteSummary').innerHTML = 'Loading details...';
     document.getElementById('approveModal').classList.add('active');
+
+    // Fetch and display quotation details for Manager review
+    const { data } = await fetchApi(`/quotations/${id}`);
+    if (data.success) {
+        const q = data.data;
+        let itemsHtml = `
+            <table style="width: 100%; border-collapse: collapse; margin-top: 0.5rem;">
+                <thead>
+                    <tr>
+                        <th style="padding: 0.5rem; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary);">Product</th>
+                        <th style="padding: 0.5rem; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary);">Qty</th>
+                        <th style="padding: 0.5rem; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary);">Price</th>
+                        <th style="padding: 0.5rem; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary);">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        q.items.forEach(item => {
+            itemsHtml += `
+                <tr>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid var(--border);">${item.productName}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid var(--border);">${item.quantity}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid var(--border);">₹${item.unitPrice.toFixed(2)}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid var(--border);">₹${item.amount.toFixed(2)}</td>
+                </tr>
+            `;
+        });
+        itemsHtml += `</tbody></table>`;
+        
+        const summaryHtml = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div>
+                    <p style="margin-bottom: 0.25rem; color: var(--text-secondary);">Customer</p>
+                    <p style="font-weight: 600; font-size: 1.1rem;">${q.customerDetails?.name}</p>
+                </div>
+                <div style="text-align: right; background: var(--bg-primary); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border);">
+                    <div style="display: flex; justify-content: space-between; gap: 2rem; margin-bottom: 0.25rem; font-size: 0.8rem; color: var(--text-secondary);">
+                        <span>Subtotal:</span>
+                        <span>₹${q.subtotal.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; gap: 2rem; margin-bottom: 0.25rem; font-size: 0.8rem; color: var(--text-secondary);">
+                        <span>Discount (${q.discountPercent}%):</span>
+                        <span>-₹${q.discountAmount.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; gap: 2rem; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-secondary);">
+                        <span>Tax Amount:</span>
+                        <span>₹${q.taxAmount.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; gap: 2rem; padding-top: 0.5rem; border-top: 1px solid var(--border); font-weight: 700;">
+                        <span>Grand Total:</span>
+                        <span style="color: var(--accent);">₹${q.grandTotal.toFixed(2)}</span>
+                    </div>
+                </div>
+            </div>
+            ${itemsHtml}
+        `;
+        document.getElementById('quoteSummary').innerHTML = summaryHtml;
+    } else {
+        document.getElementById('quoteSummary').innerHTML = '<span style="color: var(--danger);">Failed to load quotation details.</span>';
+    }
+}
+
+async function openViewModal(id) {
+    document.getElementById('viewQuoteSummary').innerHTML = 'Loading details...';
+    document.getElementById('viewModal').classList.add('active');
+
+    // Fetch and display quotation details for view mode
+    const { data } = await fetchApi(`/quotations/${id}`);
+    if (data.success) {
+        const q = data.data;
+        let itemsHtml = `
+            <table style="width: 100%; border-collapse: collapse; margin-top: 0.5rem;">
+                <thead>
+                    <tr>
+                        <th style="padding: 0.5rem; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary);">Product</th>
+                        <th style="padding: 0.5rem; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary);">Qty</th>
+                        <th style="padding: 0.5rem; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary);">Price</th>
+                        <th style="padding: 0.5rem; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary);">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        q.items.forEach(item => {
+            itemsHtml += `
+                <tr>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid var(--border);">${item.productName}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid var(--border);">${item.quantity}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid var(--border);">₹${item.unitPrice.toFixed(2)}</td>
+                    <td style="padding: 0.5rem; border-bottom: 1px solid var(--border);">₹${item.amount.toFixed(2)}</td>
+                </tr>
+            `;
+        });
+        itemsHtml += `</tbody></table>`;
+        
+        const summaryHtml = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div>
+                    <p style="margin-bottom: 0.25rem; color: var(--text-secondary);">Customer</p>
+                    <p style="font-weight: 600; font-size: 1.1rem;">${q.customerDetails?.name}</p>
+                </div>
+                <div style="text-align: right; background: var(--bg-surface); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                    <div style="display: flex; justify-content: space-between; gap: 2rem; margin-bottom: 0.25rem; font-size: 0.8rem; color: var(--text-secondary);">
+                        <span>Subtotal:</span>
+                        <span>₹${q.subtotal.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; gap: 2rem; margin-bottom: 0.25rem; font-size: 0.8rem; color: var(--text-secondary);">
+                        <span>Discount (${q.discountPercent}%):</span>
+                        <span>-₹${q.discountAmount.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; gap: 2rem; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-secondary);">
+                        <span>Tax Amount:</span>
+                        <span>₹${q.taxAmount.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; gap: 2rem; padding-top: 0.5rem; border-top: 1px solid var(--border); font-weight: 700;">
+                        <span>Grand Total:</span>
+                        <span style="color: var(--accent);">₹${q.grandTotal.toFixed(2)}</span>
+                    </div>
+                </div>
+            </div>
+            ${itemsHtml}
+        `;
+        document.getElementById('viewQuoteSummary').innerHTML = summaryHtml;
+    } else {
+        document.getElementById('viewQuoteSummary').innerHTML = '<span style="color: var(--danger);">Failed to load quotation details.</span>';
+    }
 }
 
 function closeModal(id) {

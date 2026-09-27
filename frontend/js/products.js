@@ -44,7 +44,7 @@ async function loadProducts(search = '') {
             tr.innerHTML = `
                 <td>${prod.name}</td>
                 <td>${prod.sku}</td>
-                <td>$${prod.price.toFixed(2)}</td>
+                <td>₹${prod.price.toFixed(2)}</td>
                 <td>${prod.taxRate}%</td>
                 <td>${statusBadge}</td>
                 <td class="action-btns">

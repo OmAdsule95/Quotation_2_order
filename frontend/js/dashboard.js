@@ -22,4 +22,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         console.error("Dashboard load error", error);
     }
+    
+    // Apply role-based visibility
+    const user = getUser();
+    if (user) {
+        document.getElementById('dashboardTitle').textContent = `Welcome, ${user.name}!`;
+        const subtitle = document.getElementById('dashboardSubtitle');
+
+        if (user.role === 'MANAGER') {
+            subtitle.textContent = 'Manager Portal';
+            document.getElementById('card-customers').style.display = 'none';
+            document.getElementById('card-products').style.display = 'none';
+        }
+        if (user.role === 'SALES') {
+            subtitle.textContent = 'Sales Executive Portal';
+            document.getElementById('card-products').style.display = 'none';
+        }
+        if (user.role === 'ADMIN') {
+            subtitle.textContent = 'Admin Control Center';
+            // Admin sees everything
+        }
+    }
 });

@@ -7,17 +7,32 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <nav class="glass navbar">
-        <h2>Thinqloud Q2O</h2>
-        <div class="nav-links">
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <span>Q2O System</span>
+            <h2>Quotation to Order</h2>
+        </div>
+        <nav class="sidebar-nav" id="navLinks">
             <a href="dashboard.html">Dashboard</a>
             <a href="customers.html">Customers</a>
             <a href="products.html">Products</a>
             <a href="quotations.html" class="active">Quotations</a>
             <a href="orders.html">Orders</a>
-            <button onclick="logout()" class="btn btn-primary btn-sm" style="margin-left: 1rem;">Logout</button>
+            <a href="users.html" id="nav-users" style="display: none;">Users</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">--</div>
+                <div>
+                    <div class="user-name" id="sidebarUserName">User</div>
+                    <div class="user-role" id="sidebarUserRole">Role</div>
+                </div>
+            </div>
+            <button onclick="logout()" class="btn btn-ghost" style="width: 100%; font-size: 0.8rem;">Sign Out</button>
         </div>
-    </nav>
+    </aside>
+    <div class="main-content">
+    
 
     <div class="container">
         <div class="flex-between">
@@ -66,23 +81,23 @@
                     <div style="min-width: 300px;">
                         <div class="flex-between" style="margin-bottom: 0.5rem;">
                             <span>Subtotal:</span>
-                            <strong id="dispSubtotal">$0.00</strong>
+                            <strong id="dispSubtotal">₹0.00</strong>
                         </div>
                         <div class="flex-between" style="margin-bottom: 0.5rem; color: var(--text-secondary);">
                             <span>Discount:</span>
-                            <span id="dispDiscount">$0.00</span>
+                            <span id="dispDiscount">₹0.00</span>
                         </div>
                         <div class="flex-between" style="margin-bottom: 0.5rem; color: var(--text-secondary);">
                             <span>Taxable Amount:</span>
-                            <span id="dispTaxable">$0.00</span>
+                            <span id="dispTaxable">₹0.00</span>
                         </div>
                         <div class="flex-between" style="margin-bottom: 1rem; color: var(--text-secondary);">
                             <span>Tax Amount:</span>
-                            <span id="dispTax">$0.00</span>
+                            <span id="dispTax">₹0.00</span>
                         </div>
                         <div class="flex-between" style="border-top: 1px solid var(--border); padding-top: 1rem;">
                             <span style="font-size: 1.25rem;">Grand Total:</span>
-                            <strong id="dispGrandTotal" style="font-size: 1.5rem; color: var(--accent);">$0.00</strong>
+                            <strong id="dispGrandTotal" style="font-size: 1.5rem; color: var(--accent);">₹0.00</strong>
                         </div>
                     </div>
                 </div>
@@ -93,6 +108,8 @@
             </form>
         </div>
     </div>
+    </div>
+
 
     <script src="js/auth.js"></script>
     <script src="js/api.js"></script>

@@ -72,12 +72,12 @@ function addItem(existingData = null) {
                 ${productOptions}
             </select>
         </td>
-        <td>$<span id="price-${id}">${item.unitPrice.toFixed(2)}</span></td>
+        <td>₹<span id="price-${id}">${item.unitPrice.toFixed(2)}</span></td>
         <td><span id="tax-${id}">${item.taxRate}</span>%</td>
         <td>
             <input type="number" class="form-control" value="${item.quantity}" min="1" oninput="onQuantityChange('${id}', this.value)" ${isViewMode ? 'disabled' : 'required'}>
         </td>
-        <td>$<strong id="amount-${id}">${item.amount.toFixed(2)}</strong></td>
+        <td>₹<strong id="amount-${id}">${item.amount.toFixed(2)}</strong></td>
         <td>
             ${!isViewMode ? `<button type="button" onclick="removeItem('${id}')" class="btn btn-danger btn-sm">X</button>` : ''}
         </td>
@@ -138,11 +138,11 @@ function calculateTotals() {
 
     const grandTotal = taxableAmount + taxAmount;
 
-    document.getElementById('dispSubtotal').textContent = `$${subtotal.toFixed(2)}`;
-    document.getElementById('dispDiscount').textContent = `$${discountAmount.toFixed(2)}`;
-    document.getElementById('dispTaxable').textContent = `$${taxableAmount.toFixed(2)}`;
-    document.getElementById('dispTax').textContent = `$${taxAmount.toFixed(2)}`;
-    document.getElementById('dispGrandTotal').textContent = `$${grandTotal.toFixed(2)}`;
+    document.getElementById('dispSubtotal').textContent = `₹${subtotal.toFixed(2)}`;
+    document.getElementById('dispDiscount').textContent = `₹${discountAmount.toFixed(2)}`;
+    document.getElementById('dispTaxable').textContent = `₹${taxableAmount.toFixed(2)}`;
+    document.getElementById('dispTax').textContent = `₹${taxAmount.toFixed(2)}`;
+    document.getElementById('dispGrandTotal').textContent = `₹${grandTotal.toFixed(2)}`;
 }
 
 async function saveQuotation(e) {
@@ -188,10 +188,10 @@ async function loadQuotation(id) {
             });
         });
 
-        document.getElementById('dispSubtotal').textContent = `$${q.subtotal.toFixed(2)}`;
-        document.getElementById('dispDiscount').textContent = `$${q.discountAmount.toFixed(2)}`;
-        document.getElementById('dispTaxable').textContent = `$${q.taxableAmount.toFixed(2)}`;
-        document.getElementById('dispTax').textContent = `$${q.taxAmount.toFixed(2)}`;
-        document.getElementById('dispGrandTotal').textContent = `$${q.grandTotal.toFixed(2)}`;
+        document.getElementById('dispSubtotal').textContent = `₹${q.subtotal.toFixed(2)}`;
+        document.getElementById('dispDiscount').textContent = `₹${q.discountAmount.toFixed(2)}`;
+        document.getElementById('dispTaxable').textContent = `₹${q.taxableAmount.toFixed(2)}`;
+        document.getElementById('dispTax').textContent = `₹${q.taxAmount.toFixed(2)}`;
+        document.getElementById('dispGrandTotal').textContent = `₹${q.grandTotal.toFixed(2)}`;
     }
 }

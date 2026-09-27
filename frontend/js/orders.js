@@ -20,8 +20,30 @@ async function loadOrders() {
     const user = getUser();
 
     if (data.success) {
+        // Sort data so actionable items appear first
+        data.data.sort((a, b) => {
+            const getPriority = (o) => {
+                if (user.role === 'SALES' || user.role === 'ADMIN') {
+                    return ['CONFIRMED', 'PROCESSING'].includes(o.status) ? 1 : 0;
+                } else if (user.role === 'MANAGER') {
+                    // Manager might just want active orders at the top
+                    return ['CONFIRMED', 'PROCESSING'].includes(o.status) ? 1 : 0;
+                }
+                return 0;
+            };
+            
+            const pA = getPriority(a);
+            const pB = getPriority(b);
+            
+            if (pA !== pB) {
+                return pB - pA; // Higher priority first
+            }
+            // Fallback to date descending (newest first)
+            return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+
         data.data.forEach(o => {
-            let actions = `<button onclick="viewOrder('${o._id}')" class="btn btn-sm" style="background: rgba(255,255,255,0.1);">View Items</button>`;
+            let actions = `<button onclick="viewOrder('${o._id}')" class="btn btn-sm btn-ghost">View Items</button>`;
             
             if (o.status === 'CONFIRMED' && (user.role === 'ADMIN' || user.role === 'SALES')) {
                 actions += ` <button onclick="updateStatus('${o._id}', 'PROCESSING')" class="btn btn-sm" style="background: #3b82f6; color: white;">Process</button>`;
@@ -35,7 +57,7 @@ async function loadOrders() {
                 <td>${o.orderNumber}</td>
                 <td><span style="color: var(--text-secondary); font-size: 0.875rem;">${o.quotationId ? 'Ref' : '-'}</span></td>
                 <td>${o.customerId?.name || '-'}</td>
-                <td>$${o.grandTotal.toFixed(2)}</td>
+                <td>₹${o.grandTotal.toFixed(2)}</td>
                 <td>${getOrderStatusBadge(o.status)}</td>
                 <td>${new Date(o.createdAt).toLocaleDateString()}</td>
                 <td class="action-btns">${actions}</td>
@@ -78,8 +100,8 @@ async function viewOrder(id) {
                 <tr>
                     <td>${item.productName}</td>
                     <td>${item.quantity}</td>
-                    <td>$${item.unitPrice.toFixed(2)}</td>
-                    <td>$${item.amount.toFixed(2)}</td>
+                    <td>₹${item.unitPrice.toFixed(2)}</td>
+                    <td>₹${item.amount.toFixed(2)}</td>
                 </tr>
             `;
         });
@@ -94,10 +116,10 @@ async function viewOrder(id) {
                     <p><strong>Status:</strong> ${getOrderStatusBadge(o.status)}</p>
                 </div>
                 <div style="text-align: right;">
-                    <p><strong>Subtotal:</strong> $${o.subtotal.toFixed(2)}</p>
-                    <p><strong>Discount:</strong> $${o.discountAmount.toFixed(2)}</p>
-                    <p><strong>Tax:</strong> $${o.taxAmount.toFixed(2)}</p>
-                    <h3 style="color: var(--accent);">Total: $${o.grandTotal.toFixed(2)}</h3>
+                    <p><strong>Subtotal:</strong> ₹${o.subtotal.toFixed(2)}</p>
+                    <p><strong>Discount:</strong> ₹${o.discountAmount.toFixed(2)}</p>
+                    <p><strong>Tax:</strong> ₹${o.taxAmount.toFixed(2)}</p>
+                    <h3 style="color: var(--accent);">Total: ₹${o.grandTotal.toFixed(2)}</h3>
                 </div>
             </div>
             ${itemsHtml}
