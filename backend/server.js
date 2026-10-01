@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 
 const connectDB = require("./config/db");
@@ -21,19 +22,19 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// Serve frontend
+app.use(express.static(path.join(__dirname, "../frontend")));
+
+// API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/quotations", quotationRoutes);
 app.use("/api/orders", orderRoutes);
 
-// Test route
+// Frontend
 app.get("/", (req, res) => {
-    res.json({
-        success: true,
-        message: "Quotation-to-Order API is running"
-    });
+    res.sendFile(path.join(__dirname, "../frontend/index.html"));
 });
 
 // Error handling middleware
