@@ -2,7 +2,7 @@
 
 A full-stack, role-based web application designed to streamline the sales pipeline from generating quotations to finalizing orders. It features a modern, clean UI ("Ocean Breeze" theme) and robust backend workflows for multi-tier approvals.
 
-## 🚀 Features
+## 🚀 Featuresa
 
 - **Role-Based Access Control (RBAC):**
   - **Sales Executive:** Create quotations, send them to customers, and convert accepted quotes to orders.
